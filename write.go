@@ -42,8 +42,14 @@ func SaveConfigData(c *ConfigFile, out io.Writer) (err error) {
 
 		if section != DEFAULT_SECTION {
 			// Write section name.
-			if _, err = buf.WriteString("[" + section + "]" + LineBreak); err != nil {
-				return err
+			if section[0] == '!' {
+				if _, err = buf.WriteString(section + LineBreak); err != nil {
+					return err
+				}
+			} else {
+				if _, err = buf.WriteString("[" + section + "]" + LineBreak); err != nil {
+					return err
+				}
 			}
 		}
 

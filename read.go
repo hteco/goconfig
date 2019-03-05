@@ -85,6 +85,19 @@ func (c *ConfigFile) read(reader io.Reader) (err error) {
 			// Reset counter.
 			count = 1
 			continue
+		case line[0] == '!':
+			// Get section name.
+			section = strings.TrimSpace(line)
+			// Set section comments and empty if it has comments.
+			if len(comments) > 0 {
+				c.SetSectionComments(section, comments)
+				comments = ""
+			}
+			// Make section exist even though it does not have any key.
+			c.SetValue(section, " ", " ")
+			// Reset counter.
+			count = 1
+			continue
 		case section == "": // No section defined so far
 			return readError{ERR_BLANK_SECTION_NAME, line}
 		default: // Other alternatives
@@ -121,9 +134,16 @@ func (c *ConfigFile) read(reader io.Reader) (err error) {
 			} else {
 				i = strings.IndexAny(line, "=:")
 				if i <= 0 {
-					return readError{ERR_COULD_NOT_PARSE, line}
+					if len(comments) == 0 {
+						comments = line
+					} else {
+						comments += LineBreak + line
+					}
+					continue
+					// return readError{ERR_COULD_NOT_PARSE, line}
+				} else {
+					key = strings.TrimSpace(line[0:i])
 				}
-				key = strings.TrimSpace(line[0:i])
 			}
 			//[SWH|+];
 
